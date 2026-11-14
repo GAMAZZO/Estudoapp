@@ -20,6 +20,7 @@ import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.Checkbox
@@ -64,6 +65,7 @@ fun TasksScreen(taskDao: StudyTaskDao) {
     val scope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
     val completionError = stringResource(R.string.task_completion_error)
+    val deleteError = stringResource(R.string.task_delete_error)
 
     Scaffold(snackbarHost = { SnackbarHost(snackbarHostState) }) { contentPadding ->
         val modifier = Modifier.fillMaxSize()
@@ -86,6 +88,15 @@ fun TasksScreen(taskDao: StudyTaskDao) {
                             snackbarHostState.showSnackbar(completionError)
                         }
                     }
+                },
+                onDelete = { taskId ->
+                    scope.launch {
+                        try {
+                            taskDao.deleteTask(taskId)
+                        } catch (_: SQLiteException) {
+                            snackbarHostState.showSnackbar(deleteError)
+                        }
+                    }
                 }
             )
         }
@@ -97,8 +108,12 @@ private fun TaskList(
     modifier: Modifier,
     tasks: List<StudyTask>?,
     onNewTask: () -> Unit,
-    onToggleCompletion: (Long) -> Unit
+    onToggleCompletion: (Long) -> Unit,
+    onDelete: (Long) -> Unit
 ) {
+    var taskIdToDelete by rememberSaveable { mutableStateOf<Long?>(null) }
+    val taskToDelete = tasks?.firstOrNull { it.id == taskIdToDelete }
+
     LazyColumn(
         modifier = modifier,
         contentPadding = PaddingValues(horizontal = 24.dp, vertical = 32.dp),
@@ -156,9 +171,39 @@ private fun TaskList(
                         Checkbox(checked = task.isCompleted, onCheckedChange = null)
                         Text(stringResource(R.string.task_completed))
                     }
+                    TextButton(onClick = { taskIdToDelete = task.id }) {
+                        Text(
+                            text = stringResource(R.string.task_delete),
+                            color = MaterialTheme.colorScheme.error
+                        )
+                    }
                 }
             }
         }
+    }
+
+    if (taskToDelete != null) {
+        AlertDialog(
+            onDismissRequest = { taskIdToDelete = null },
+            title = { Text(stringResource(R.string.task_delete_title)) },
+            text = { Text(stringResource(R.string.task_delete_confirmation, taskToDelete.title)) },
+            dismissButton = {
+                TextButton(onClick = { taskIdToDelete = null }) {
+                    Text(stringResource(R.string.task_cancel))
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = {
+                    taskIdToDelete = null
+                    onDelete(taskToDelete.id)
+                }) {
+                    Text(
+                        text = stringResource(R.string.task_delete),
+                        color = MaterialTheme.colorScheme.error
+                    )
+                }
+            }
+        )
     }
 }
 

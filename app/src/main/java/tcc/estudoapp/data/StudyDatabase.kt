@@ -18,6 +18,9 @@ interface StudyTaskDao {
 
     @Query("UPDATE study_tasks SET isCompleted = NOT isCompleted WHERE id = :taskId")
     suspend fun toggleCompletion(taskId: Long)
+
+    @Query("DELETE FROM study_tasks WHERE id = :taskId")
+    suspend fun deleteTask(taskId: Long)
 }
 
 @Database(
