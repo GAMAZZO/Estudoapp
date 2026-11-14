@@ -23,4 +23,15 @@
     <string name="task_delete_title">Excluir tarefa?</string>
     <string name="task_delete_confirmation">A tarefa “%1$s” será removida da lista.</string>
     <string name="task_delete_error">Não foi possível excluir a tarefa. Tente novamente.</string>
+    <string name="stopwatch_title">Cronômetro</string>
+    <string name="stopwatch_back">Voltar às tarefas</string>
+    <string name="stopwatch_start">Iniciar</string>
+    <string name="stopwatch_pause">Pausar</string>
+    <string name="stopwatch_resume">Retomar</string>
+    <string name="stopwatch_finish">Encerrar e salvar</string>
+    <string name="stopwatch_running">Sessão em andamento</string>
+    <string name="stopwatch_paused">Sessão pausada</string>
+    <string name="stopwatch_saved">Sessão de estudo salva.</string>
+    <string name="stopwatch_save_error">Não foi possível salvar a sessão. Tente novamente.</string>
+    <string name="stopwatch_elapsed_description">Tempo de estudo: %1$s</string>
 </resources>
