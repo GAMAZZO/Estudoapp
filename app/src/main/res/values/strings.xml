@@ -4,6 +4,8 @@
     <string name="tasks_title">Tarefas de estudo</string>
     <string name="tasks_empty">Nenhuma tarefa cadastrada.</string>
     <string name="task_new">Nova tarefa</string>
+    <string name="task_edit">Editar</string>
+    <string name="task_edit_title">Editar tarefa</string>
     <string name="task_title">Nome da tarefa</string>
     <string name="task_select_due_date">Selecionar prazo</string>
     <string name="task_due_date">Prazo: %1$s</string>

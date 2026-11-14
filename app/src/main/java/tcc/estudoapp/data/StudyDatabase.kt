@@ -16,6 +16,17 @@ interface StudyTaskDao {
     @Insert
     suspend fun insert(task: StudyTask)
 
+    @Query(
+        "UPDATE study_tasks SET title = :title, dueDateUtcMillis = :dueDateUtcMillis, " +
+            "priority = :priority WHERE id = :taskId"
+    )
+    suspend fun updateTask(
+        taskId: Long,
+        title: String,
+        dueDateUtcMillis: Long,
+        priority: TaskPriority
+    ): Int
+
     @Query("UPDATE study_tasks SET isCompleted = NOT isCompleted WHERE id = :taskId")
     suspend fun toggleCompletion(taskId: Long)
 

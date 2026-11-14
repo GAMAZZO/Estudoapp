@@ -24,6 +24,7 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.Checkbox
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
@@ -61,7 +62,11 @@ import java.util.TimeZone
 
 @Composable
 fun TasksScreen(taskDao: StudyTaskDao) {
-    var showForm by rememberSaveable { mutableStateOf(false) }
+    var creatingTask by rememberSaveable { mutableStateOf(false) }
+    var taskIdToEdit by rememberSaveable { mutableStateOf<Long?>(null) }
+    val taskFlow = remember(taskDao) { taskDao.observeTasks() }
+    val tasks by taskFlow.collectAsStateWithLifecycle(initialValue = null)
+    val taskToEdit = tasks?.firstOrNull { it.id == taskIdToEdit }
     val scope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
     val completionError = stringResource(R.string.task_completion_error)
@@ -71,15 +76,40 @@ fun TasksScreen(taskDao: StudyTaskDao) {
         val modifier = Modifier.fillMaxSize()
             .padding(contentPadding)
             .consumeWindowInsets(contentPadding)
-        if (showForm) {
-            NewTaskForm(modifier, taskDao::insert, onClose = { showForm = false })
+        if (creatingTask || taskToEdit != null) {
+            TaskForm(
+                modifier = modifier,
+                taskToEdit = taskToEdit,
+                onSave = { title, dueDate, priority ->
+                    if (taskToEdit == null) {
+                        taskDao.insert(StudyTask(title, dueDate, priority))
+                        true
+                    } else {
+                        taskDao.updateTask(taskToEdit.id, title, dueDate, priority) == 1
+                    }
+                },
+                onClose = {
+                    creatingTask = false
+                    taskIdToEdit = null
+                }
+            )
+        } else if (taskIdToEdit != null && tasks == null) {
+            Column(
+                modifier = modifier,
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                CircularProgressIndicator()
+            }
         } else {
-            val taskFlow = remember(taskDao) { taskDao.observeTasks() }
-            val tasks by taskFlow.collectAsStateWithLifecycle(initialValue = null)
             TaskList(
                 modifier,
                 tasks,
-                onNewTask = { showForm = true },
+                onNewTask = {
+                    taskIdToEdit = null
+                    creatingTask = true
+                },
+                onEdit = { taskIdToEdit = it },
                 onToggleCompletion = { taskId ->
                     scope.launch {
                         try {
@@ -108,6 +138,7 @@ private fun TaskList(
     modifier: Modifier,
     tasks: List<StudyTask>?,
     onNewTask: () -> Unit,
+    onEdit: (Long) -> Unit,
     onToggleCompletion: (Long) -> Unit,
     onDelete: (Long) -> Unit
 ) {
@@ -171,11 +202,16 @@ private fun TaskList(
                         Checkbox(checked = task.isCompleted, onCheckedChange = null)
                         Text(stringResource(R.string.task_completed))
                     }
-                    TextButton(onClick = { taskIdToDelete = task.id }) {
-                        Text(
-                            text = stringResource(R.string.task_delete),
-                            color = MaterialTheme.colorScheme.error
-                        )
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        TextButton(onClick = { onEdit(task.id) }) {
+                            Text(stringResource(R.string.task_edit))
+                        }
+                        TextButton(onClick = { taskIdToDelete = task.id }) {
+                            Text(
+                                text = stringResource(R.string.task_delete),
+                                color = MaterialTheme.colorScheme.error
+                            )
+                        }
                     }
                 }
             }
@@ -208,14 +244,17 @@ private fun TaskList(
 }
 
 @Composable
-private fun NewTaskForm(
+private fun TaskForm(
     modifier: Modifier,
-    onSave: suspend (StudyTask) -> Unit,
+    taskToEdit: StudyTask?,
+    onSave: suspend (String, Long, TaskPriority) -> Boolean,
     onClose: () -> Unit
 ) {
-    var title by rememberSaveable { mutableStateOf("") }
-    var dueDate by rememberSaveable { mutableStateOf<Long?>(null) }
-    var priority by rememberSaveable { mutableStateOf(TaskPriority.MEDIUM) }
+    var title by rememberSaveable { mutableStateOf(taskToEdit?.title.orEmpty()) }
+    var dueDate by rememberSaveable { mutableStateOf(taskToEdit?.dueDateUtcMillis) }
+    var priority by rememberSaveable {
+        mutableStateOf(taskToEdit?.priority ?: TaskPriority.MEDIUM)
+    }
     var saving by remember { mutableStateOf(false) }
     var saveFailed by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
@@ -233,7 +272,9 @@ private fun NewTaskForm(
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         Text(
-            text = stringResource(R.string.task_new),
+            text = stringResource(
+                if (taskToEdit == null) R.string.task_new else R.string.task_edit_title
+            ),
             modifier = Modifier.semantics { heading() },
             style = MaterialTheme.typography.headlineMedium
         )
@@ -308,13 +349,17 @@ private fun NewTaskForm(
                 onClick = {
                     val date = dueDate
                     if (!saving && title.isNotBlank() && date != null) {
-                        val task = StudyTask(title.trim(), date, priority)
+                        val trimmedTitle = title.trim()
+                        val selectedPriority = priority
                         saving = true
                         saveFailed = false
                         scope.launch {
                             try {
-                                onSave(task)
-                                onClose()
+                                if (onSave(trimmedTitle, date, selectedPriority)) {
+                                    onClose()
+                                } else {
+                                    saveFailed = true
+                                }
                             } catch (_: SQLiteException) {
                                 saveFailed = true
                             } finally {
