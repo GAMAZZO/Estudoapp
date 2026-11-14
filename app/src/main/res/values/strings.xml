@@ -15,4 +15,6 @@
     <string name="task_save">Salvar</string>
     <string name="task_cancel">Cancelar</string>
     <string name="task_save_error">Não foi possível salvar a tarefa. Tente novamente.</string>
+    <string name="task_completed">Concluída</string>
+    <string name="task_completion_error">Não foi possível atualizar a conclusão da tarefa. Tente novamente.</string>
 </resources>

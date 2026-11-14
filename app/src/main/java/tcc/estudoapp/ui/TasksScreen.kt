@@ -18,14 +18,18 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.selectableGroup
+import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -57,8 +61,11 @@ import java.util.TimeZone
 @Composable
 fun TasksScreen(taskDao: StudyTaskDao) {
     var showForm by rememberSaveable { mutableStateOf(false) }
+    val scope = rememberCoroutineScope()
+    val snackbarHostState = remember { SnackbarHostState() }
+    val completionError = stringResource(R.string.task_completion_error)
 
-    Scaffold { contentPadding ->
+    Scaffold(snackbarHost = { SnackbarHost(snackbarHostState) }) { contentPadding ->
         val modifier = Modifier.fillMaxSize()
             .padding(contentPadding)
             .consumeWindowInsets(contentPadding)
@@ -67,13 +74,31 @@ fun TasksScreen(taskDao: StudyTaskDao) {
         } else {
             val taskFlow = remember(taskDao) { taskDao.observeTasks() }
             val tasks by taskFlow.collectAsStateWithLifecycle(initialValue = null)
-            TaskList(modifier, tasks, onNewTask = { showForm = true })
+            TaskList(
+                modifier,
+                tasks,
+                onNewTask = { showForm = true },
+                onToggleCompletion = { taskId ->
+                    scope.launch {
+                        try {
+                            taskDao.toggleCompletion(taskId)
+                        } catch (_: SQLiteException) {
+                            snackbarHostState.showSnackbar(completionError)
+                        }
+                    }
+                }
+            )
         }
     }
 }
 
 @Composable
-private fun TaskList(modifier: Modifier, tasks: List<StudyTask>?, onNewTask: () -> Unit) {
+private fun TaskList(
+    modifier: Modifier,
+    tasks: List<StudyTask>?,
+    onNewTask: () -> Unit,
+    onToggleCompletion: (Long) -> Unit
+) {
     LazyColumn(
         modifier = modifier,
         contentPadding = PaddingValues(horizontal = 24.dp, vertical = 32.dp),
@@ -116,6 +141,21 @@ private fun TaskList(modifier: Modifier, tasks: List<StudyTask>?, onNewTask: () 
                     Text(task.title, style = MaterialTheme.typography.titleMedium)
                     Text(stringResource(R.string.task_due_date, formatDueDate(task.dueDateUtcMillis)))
                     Text(stringResource(R.string.task_priority_label, stringResource(task.priority.label)))
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .toggleable(
+                                value = task.isCompleted,
+                                role = Role.Checkbox,
+                                onValueChange = { onToggleCompletion(task.id) }
+                            )
+                            .padding(vertical = 12.dp),
+                        horizontalArrangement = Arrangement.spacedBy(12.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Checkbox(checked = task.isCompleted, onCheckedChange = null)
+                        Text(stringResource(R.string.task_completed))
+                    }
                 }
             }
         }
