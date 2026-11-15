@@ -83,7 +83,11 @@ fun StudyApp(database: StudyDatabase) {
         )
     } else if (screen == StudyScreen.HISTORY) {
         screenState.SaveableStateProvider("history") {
-            HistoryScreen(database.studySessionDao(), onBack = { screen = StudyScreen.TASKS })
+            HistoryScreen(
+                database.studySessionDao(),
+                database.studyGoalDao(),
+                onBack = { screen = StudyScreen.TASKS }
+            )
         }
     } else if (screen == StudyScreen.GOALS) {
         GoalsScreen(
