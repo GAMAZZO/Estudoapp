@@ -61,7 +61,7 @@ import java.util.Date
 import java.util.TimeZone
 
 @Composable
-fun TasksScreen(taskDao: StudyTaskDao, onOpenStopwatch: () -> Unit) {
+fun TasksScreen(taskDao: StudyTaskDao, onOpenStopwatch: () -> Unit, onOpenHistory: () -> Unit) {
     var creatingTask by rememberSaveable { mutableStateOf(false) }
     var taskIdToEdit by rememberSaveable { mutableStateOf<Long?>(null) }
     val taskFlow = remember(taskDao) { taskDao.observeTasks() }
@@ -106,6 +106,7 @@ fun TasksScreen(taskDao: StudyTaskDao, onOpenStopwatch: () -> Unit) {
                 modifier,
                 tasks,
                 onOpenStopwatch = onOpenStopwatch,
+                onOpenHistory = onOpenHistory,
                 onNewTask = {
                     taskIdToEdit = null
                     creatingTask = true
@@ -139,6 +140,7 @@ private fun TaskList(
     modifier: Modifier,
     tasks: List<StudyTask>?,
     onOpenStopwatch: () -> Unit,
+    onOpenHistory: () -> Unit,
     onNewTask: () -> Unit,
     onEdit: (Long) -> Unit,
     onToggleCompletion: (Long) -> Unit,
@@ -174,6 +176,9 @@ private fun TaskList(
                 OutlinedButton(onClick = onOpenStopwatch, modifier = Modifier.weight(1f)) {
                     Text(stringResource(R.string.stopwatch_title))
                 }
+            }
+            OutlinedButton(onClick = onOpenHistory, modifier = Modifier.fillMaxWidth()) {
+                Text(stringResource(R.string.history_title))
             }
         }
         if (tasks?.isEmpty() == true) {

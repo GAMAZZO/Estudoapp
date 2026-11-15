@@ -19,7 +19,7 @@ import java.util.UUID
 
 @Composable
 fun StudyApp(database: StudyDatabase) {
-    var showStopwatch by rememberSaveable { mutableStateOf(false) }
+    var screen by rememberSaveable { mutableStateOf(StudyScreen.TASKS) }
     var timer by rememberSaveable(stateSaver = StudyTimer.Saver) {
         mutableStateOf(StudyTimer())
     }
@@ -29,16 +29,16 @@ fun StudyApp(database: StudyDatabase) {
     val scope = rememberCoroutineScope()
     val screenState = rememberSaveableStateHolder()
 
-    BackHandler(enabled = showStopwatch) {
-        if (!saving) showStopwatch = false
+    BackHandler(enabled = screen != StudyScreen.TASKS) {
+        if (!saving) screen = StudyScreen.TASKS
     }
-    if (showStopwatch) {
+    if (screen == StudyScreen.STOPWATCH) {
         StopwatchScreen(
             timer = timer,
             saving = saving,
             saved = saved,
             saveFailed = saveFailed,
-            onBack = { showStopwatch = false },
+            onBack = { screen = StudyScreen.TASKS },
             onStart = {
                 val now = SystemClock.elapsedRealtime()
                 timer = if (timer.id.isEmpty()) {
@@ -81,12 +81,22 @@ fun StudyApp(database: StudyDatabase) {
                 }
             }
         )
+    } else if (screen == StudyScreen.HISTORY) {
+        screenState.SaveableStateProvider("history") {
+            HistoryScreen(database.studySessionDao(), onBack = { screen = StudyScreen.TASKS })
+        }
     } else {
         screenState.SaveableStateProvider("tasks") {
-            TasksScreen(database.studyTaskDao(), onOpenStopwatch = { showStopwatch = true })
+            TasksScreen(
+                database.studyTaskDao(),
+                onOpenStopwatch = { screen = StudyScreen.STOPWATCH },
+                onOpenHistory = { screen = StudyScreen.HISTORY }
+            )
         }
     }
 }
+
+private enum class StudyScreen { TASKS, STOPWATCH, HISTORY }
 
 internal data class StudyTimer(
     val id: String = "",

@@ -56,8 +56,7 @@ internal fun StopwatchScreen(
             }
         }
     }
-    val seconds = timer.elapsedAt(now) / 1_000
-    val elapsed = String.format(Locale.getDefault(), "%02d:%02d:%02d", seconds / 3600, seconds / 60 % 60, seconds % 60)
+    val elapsed = formatStudyDuration(timer.elapsedAt(now))
     val elapsedDescription = stringResource(R.string.stopwatch_elapsed_description, elapsed)
     val active = timer.id.isNotEmpty()
 
@@ -108,4 +107,9 @@ internal fun StopwatchScreen(
             }
         }
     }
+}
+
+internal fun formatStudyDuration(millis: Long): String {
+    val seconds = millis / 1_000
+    return String.format(Locale.getDefault(), "%02d:%02d:%02d", seconds / 3600, seconds / 60 % 60, seconds % 60)
 }

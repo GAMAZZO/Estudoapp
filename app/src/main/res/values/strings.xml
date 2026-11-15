@@ -34,4 +34,15 @@
     <string name="stopwatch_saved">Sessão de estudo salva.</string>
     <string name="stopwatch_save_error">Não foi possível salvar a sessão. Tente novamente.</string>
     <string name="stopwatch_elapsed_description">Tempo de estudo: %1$s</string>
+    <string name="history_title">Histórico de estudo</string>
+    <string name="history_previous_month">Mês anterior</string>
+    <string name="history_next_month">Próximo mês</string>
+    <string name="history_day_total">Total estudado: %1$s</string>
+    <string name="history_empty_day">Nenhuma sessão de estudo neste dia.</string>
+    <string name="history_session_start">Início: %1$s</string>
+    <string name="history_session_duration">Duração: %1$s</string>
+    <string name="history_calendar_day">%1$s. Tempo estudado: %2$s</string>
+    <string name="history_short_hours">%1$dh</string>
+    <string name="history_short_minutes">%1$dmin</string>
+    <string name="history_short_seconds">%1$ds</string>
 </resources>
