@@ -35,11 +35,16 @@ interface StudyTaskDao {
 }
 
 @Database(
-    entities = [StudyTask::class, StudySession::class],
-    version = 3,
-    autoMigrations = [AutoMigration(from = 1, to = 2), AutoMigration(from = 2, to = 3)]
+    entities = [StudyTask::class, StudySession::class, StudyGoal::class],
+    version = 4,
+    autoMigrations = [
+        AutoMigration(from = 1, to = 2),
+        AutoMigration(from = 2, to = 3),
+        AutoMigration(from = 3, to = 4)
+    ]
 )
 abstract class StudyDatabase : RoomDatabase() {
     abstract fun studyTaskDao(): StudyTaskDao
     abstract fun studySessionDao(): StudySessionDao
+    abstract fun studyGoalDao(): StudyGoalDao
 }

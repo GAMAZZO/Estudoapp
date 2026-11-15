@@ -45,4 +45,20 @@
     <string name="history_short_hours">%1$dh</string>
     <string name="history_short_minutes">%1$dmin</string>
     <string name="history_short_seconds">%1$ds</string>
+    <string name="goals_title">Metas de estudo</string>
+    <string name="goal_daily">Meta diária</string>
+    <string name="goal_weekly">Meta semanal</string>
+    <string name="goal_monthly">Meta mensal</string>
+    <string name="goal_week_description">A semana vai de segunda a domingo.</string>
+    <string name="goal_undefined">Meta ainda não definida.</string>
+    <string name="goal_set">Definir meta</string>
+    <string name="goal_edit">Editar meta</string>
+    <string name="goal_target">Objetivo: %1$s</string>
+    <string name="goal_studied">Tempo estudado: %1$s</string>
+    <string name="goal_remaining">Faltam %1$s</string>
+    <string name="goal_reached">Meta atingida.</string>
+    <string name="goal_hours">Horas</string>
+    <string name="goal_minutes">Minutos</string>
+    <string name="goal_duration_hint">Informe um tempo maior que zero. Use de 0 a 59 no campo de minutos.</string>
+    <string name="goal_save_error">Não foi possível salvar a meta. Tente novamente.</string>
 </resources>

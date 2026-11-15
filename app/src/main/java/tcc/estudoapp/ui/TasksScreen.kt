@@ -61,7 +61,12 @@ import java.util.Date
 import java.util.TimeZone
 
 @Composable
-fun TasksScreen(taskDao: StudyTaskDao, onOpenStopwatch: () -> Unit, onOpenHistory: () -> Unit) {
+fun TasksScreen(
+    taskDao: StudyTaskDao,
+    onOpenStopwatch: () -> Unit,
+    onOpenHistory: () -> Unit,
+    onOpenGoals: () -> Unit
+) {
     var creatingTask by rememberSaveable { mutableStateOf(false) }
     var taskIdToEdit by rememberSaveable { mutableStateOf<Long?>(null) }
     val taskFlow = remember(taskDao) { taskDao.observeTasks() }
@@ -107,6 +112,7 @@ fun TasksScreen(taskDao: StudyTaskDao, onOpenStopwatch: () -> Unit, onOpenHistor
                 tasks,
                 onOpenStopwatch = onOpenStopwatch,
                 onOpenHistory = onOpenHistory,
+                onOpenGoals = onOpenGoals,
                 onNewTask = {
                     taskIdToEdit = null
                     creatingTask = true
@@ -141,6 +147,7 @@ private fun TaskList(
     tasks: List<StudyTask>?,
     onOpenStopwatch: () -> Unit,
     onOpenHistory: () -> Unit,
+    onOpenGoals: () -> Unit,
     onNewTask: () -> Unit,
     onEdit: (Long) -> Unit,
     onToggleCompletion: (Long) -> Unit,
@@ -177,8 +184,13 @@ private fun TaskList(
                     Text(stringResource(R.string.stopwatch_title))
                 }
             }
-            OutlinedButton(onClick = onOpenHistory, modifier = Modifier.fillMaxWidth()) {
-                Text(stringResource(R.string.history_title))
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                OutlinedButton(onClick = onOpenHistory, modifier = Modifier.weight(1f)) {
+                    Text(stringResource(R.string.history_title))
+                }
+                OutlinedButton(onClick = onOpenGoals, modifier = Modifier.weight(1f)) {
+                    Text(stringResource(R.string.goals_title))
+                }
             }
         }
         if (tasks?.isEmpty() == true) {

@@ -85,18 +85,25 @@ fun StudyApp(database: StudyDatabase) {
         screenState.SaveableStateProvider("history") {
             HistoryScreen(database.studySessionDao(), onBack = { screen = StudyScreen.TASKS })
         }
+    } else if (screen == StudyScreen.GOALS) {
+        GoalsScreen(
+            database.studyGoalDao(),
+            database.studySessionDao(),
+            onBack = { screen = StudyScreen.TASKS }
+        )
     } else {
         screenState.SaveableStateProvider("tasks") {
             TasksScreen(
                 database.studyTaskDao(),
                 onOpenStopwatch = { screen = StudyScreen.STOPWATCH },
-                onOpenHistory = { screen = StudyScreen.HISTORY }
+                onOpenHistory = { screen = StudyScreen.HISTORY },
+                onOpenGoals = { screen = StudyScreen.GOALS }
             )
         }
     }
 }
 
-private enum class StudyScreen { TASKS, STOPWATCH, HISTORY }
+private enum class StudyScreen { TASKS, STOPWATCH, HISTORY, GOALS }
 
 internal data class StudyTimer(
     val id: String = "",
